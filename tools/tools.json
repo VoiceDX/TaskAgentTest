@@ -1,0 +1,7 @@
+[
+  {
+    "name": "math_tool",
+    "description": "Evaluate a mathematical expression using Python's AST evaluator.",
+    "script_path": "tools/math_tool.py"
+  }
+]
