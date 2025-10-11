@@ -24,20 +24,33 @@ pip install autogen openai
    export OPENAI_MODEL="gpt-4o"
    ```
 3. 利用可能なツールは `tools/tools.json` に JSON 配列で記述します。
-   - 各要素は `name`, `description`, `script_path` を持ちます。
+   - 各要素は `name`, `description`, `script_path`, `arguments` を持ちます。
+   - `arguments` はコマンドライン引数の定義を表すオブジェクト配列です。
+     - `name`: エージェントが値を指定する際に使用する引数名。
+     - `option`: Python スクリプト起動時に付与するコマンドラインオプション（例: `--expression`）。
+     - `description`: 引数の説明。
+     - `required`: 必須かどうかを示す真偽値。
    - `script_path` には Python スクリプトへの相対パスを指定します。
 
    ```json
    [
      {
-       "name": "math",
+       "name": "math_tool",
        "description": "数式を評価して結果を返すツール",
-       "script_path": "tools/math_tool.py"
+       "script_path": "tools/math_tool.py",
+       "arguments": [
+         {
+           "name": "expression",
+           "option": "--expression",
+           "description": "評価したい数式 (例: 2+3*4)",
+           "required": true
+         }
+       ]
      }
    ]
    ```
 
-   新しいツールを追加する場合は、対応する Python スクリプトを作成し、上記フォーマットで JSON に登録してください。
+   新しいツールを追加する場合は、対応する Python スクリプトを作成した上で、必要な引数定義を含めて JSON に登録してください。
 
 ## 使い方
 1. プロジェクトルートで以下のコマンドを実行します。
@@ -45,7 +58,7 @@ pip install autogen openai
    python src/main.py
    ```
 2. プロンプトに従って目的（例: `2+3*4 を計算して`）を入力します。
-3. エージェントが最大試行回数（既定は 5 回）まで計画とツール実行を繰り返し、最終結果を表示します。
+3. エージェントが最大試行回数（既定は 5 回）まで計画とツール実行を繰り返し、最終結果を表示します。ツールに引数が定義されている場合、エージェントは `action_input` を JSON オブジェクトとして出力し、各引数名に対する値を指定します。
 
 ## 実装ファイル
 - `src/agent.py`: ReAct エージェント本体とツール登録クラスを実装しています。
