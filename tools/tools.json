@@ -1,16 +1,5 @@
 [
   {
-<<<<<<< HEAD
-    "name": "edit_contract",
-    "description": "契約書の修正案を作成する",
-    "script_path": "tools/edit_contract.py",
-    "arguments": [
-      {
-        "name": "requirement",
-        "option": "-r",
-        "description": "修正する内容や方針",
-        "required": false
-=======
     "name": "create_draft",
     "description": "契約書の草案を作成する",
     "script_path": "tools/request_legal.py",
@@ -91,48 +80,11 @@
         "option": "-t",
         "description": "メールの目的と文章作成のための要旨",
         "required": true
->>>>>>> 473fea73511ec5cb7acb1676626ad93df927c826
       }
     ]
   },
   {
     "name": "mail_send",
-<<<<<<< HEAD
-    "description": "顧客に対してメールで依頼事項を投げて見解を仰ぐ。交渉進めるために顧客の意見を聞いたり顧客に要求を伝えるアクション",
-    "script_path": "tools/mail_chcek.py",
-    "arguments": [
-      {
-        "name": "requirement",
-        "option": "-r",
-        "description": "顧客に対する依頼内容",
-        "required": false
-      }
-    ]
-  },
-  {
-    "name": "edit_contract_regal",
-    "description": "契約書の修正案を法務部門に作成依頼する",
-    "script_path": "tools/edit_contract_regal.py",
-    "arguments": [
-      {
-        "name": "requirement",
-        "option": "-r",
-        "description": "法務部門に対する修正箇所や修正方針の内容",
-        "required": false
-      }
-    ]
-  },
-  {
-    "name": "question_regal",
-    "description": "法律や自社の契約ルールに関する疑問点を法務に質問する",
-    "script_path": "tools/question_regal.py",
-    "arguments": [
-      {
-        "name": "requirement",
-        "option": "-r",
-        "description": "質問する内容あるいは疑問点",
-        "required": false
-=======
     "description": "顧客に対してメールを送信する",
     "script_path": "tools/mail_send.py",
     "arguments": [
@@ -141,48 +93,31 @@
         "option": "-t",
         "description": "顧客の名前",
         "required": true
->>>>>>> 473fea73511ec5cb7acb1676626ad93df927c826
       }
     ]
   },
   {
     "name": "human_in_the_roop_check",
-<<<<<<< HEAD
-    "description": "法務部門や顧客に依頼を出す前に内容として問題ないかを人間に確認する",
-=======
     "description": "法務部門や顧客に依頼を出す前に内容として問題ないかを担当部門のユーザに確認する",
->>>>>>> 473fea73511ec5cb7acb1676626ad93df927c826
     "script_path": "tools/human_in_the_roop_check.py",
     "arguments": [
       {
         "name": "requirement",
         "option": "-r",
         "description": "人間に対する確認内容",
-<<<<<<< HEAD
-        "required": false
-=======
         "required": true
->>>>>>> 473fea73511ec5cb7acb1676626ad93df927c826
       }
     ]
   },
   {
     "name": "human_in_the_roop_advice",
-<<<<<<< HEAD
-    "description": "進め方が分からない場合に人間に助けを求める",
-=======
     "description": "進め方が分からない場合に担当部門のユーザに助けを求める",
->>>>>>> 473fea73511ec5cb7acb1676626ad93df927c826
     "script_path": "tools/human_in_the_roop_advice.py",
     "arguments": [
       {
         "name": "requirement",
         "option": "-r",
-<<<<<<< HEAD
-        "description": "人間に対する質問内容",
-=======
         "description": "助けを求めたい内容、何の回答を得たいかを示す",
->>>>>>> 473fea73511ec5cb7acb1676626ad93df927c826
         "required": false
       }
     ]
