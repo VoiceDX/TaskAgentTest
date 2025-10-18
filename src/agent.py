@@ -174,15 +174,16 @@ class ReactAgent:
         return overview
 
     def _build_system_prompt(self) -> str:
-        print(f"[agent.py][ReactAgent._build_system_prompt] building_prompt=True")
+        prompt_path = Path(__file__).resolve().parent / "system_prompt.txt"
+        print(
+            f"[agent.py][ReactAgent._build_system_prompt] prompt_path={prompt_path}"
+        )
+        with prompt_path.open("r", encoding="utf-8") as fp:
+            template = fp.read()
         overview = self._build_tool_overview()
-        prompt = (
-            "You are an assistant following the ReAct approach.\n"
-            "Available tools:\n"
-            f"{overview}\n"
-            "Respond in JSON with keys 'thought', 'action', 'action_input', 'is_final', and 'final_answer'.\n"
-            "When invoking a tool with defined arguments, set 'action_input' to a JSON object mapping argument names to their values.\n"
-            "If you believe the objective is achieved or impossible, set 'is_final' to true and provide 'final_answer'."
+        prompt = template.replace("{tool_overview}", overview)
+        print(
+            f"[agent.py][ReactAgent._build_system_prompt] template_length={len(template)}, overview_length={len(overview)}"
         )
         print(f"[agent.py][ReactAgent._build_system_prompt] prompt={prompt}")
         return prompt
