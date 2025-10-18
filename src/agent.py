@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -29,6 +30,7 @@ class Tool:
     description: str
     script_path: str
     arguments: List[ToolArgument] = field(default_factory=list)
+    accepts_stdin: bool = False
 
 
 class ToolRegistry:
@@ -58,6 +60,7 @@ class ToolRegistry:
                 description=item["description"],
                 script_path=item["script_path"],
                 arguments=arguments,
+                accepts_stdin=item.get("accepts_stdin", False),
             )
             self.tools[tool.name] = tool
         print(f"[agent.py][ToolRegistry.load_tools] tools={self.tools}")
@@ -135,6 +138,8 @@ class ReactAgent:
         #print(f"[agent.py][ReactAgent._build_tool_docstring] tool={tool}")
         if not tool.arguments:
             description = f"{tool.description}. 実行例: python {tool.script_path} '<input>'"
+            if tool.accepts_stdin:
+                description += " 標準入力に対応しています (action_input に stdin を含めるか、実行時に入力を指定してください)。"
             print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
             return description
         argument_lines = []
@@ -146,7 +151,7 @@ class ReactAgent:
             )
         formatted_arguments = " | ".join(argument_lines)
         description = f"{tool.description}. 引数: {formatted_arguments}"
-        #print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
+        print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
         return description
 
     def _build_tool_overview(self) -> str:
@@ -164,8 +169,9 @@ class ReactAgent:
                         f"{argument.name}{option_text} - {argument.description} ({requirement_text})"
                     )
                 arguments_description = "; ".join(argument_details)
+            stdin_description = "Accepts stdin" if tool.accepts_stdin else "No stdin support"
             tool_descriptions.append(
-                f"- {tool.name}: {tool.description} (python {tool.script_path})\n  Arguments: {arguments_description}"
+                f"- {tool.name}: {tool.description} (python {tool.script_path})\n  Arguments: {arguments_description}\n  Stdin: {stdin_description}"
             )
         overview = "\n".join(tool_descriptions)
         print(f"[agent.py][ReactAgent._build_tool_overview] overview={overview}")
@@ -209,12 +215,18 @@ class ReactAgent:
         print(
             f"[agent.py][ReactAgent._invoke_tool_command] tool={tool}, normalized_input={normalized_input}"
         )
-        command: List[str] = ["python", tool.script_path]
+        stdin_payload: Optional[str] = None
+        prepared_input: Union[str, Dict[str, Any], List[Any]] = normalized_input
         if isinstance(normalized_input, dict):
+            input_copy = dict(normalized_input)
+            stdin_payload = self._extract_stdin_payload(tool, input_copy)
+            prepared_input = input_copy
+        command: List[str] = ["python", tool.script_path]
+        if isinstance(prepared_input, dict):
             missing_arguments = [
                 argument.name
                 for argument in tool.arguments
-                if argument.required and argument.name not in normalized_input
+                if argument.required and argument.name not in prepared_input
             ]
             if missing_arguments:
                 message = f"Missing required arguments: {', '.join(missing_arguments)}"
@@ -222,28 +234,28 @@ class ReactAgent:
                 return message
             recognized_arguments = {argument.name for argument in tool.arguments}
             for argument in tool.arguments:
-                if argument.name not in normalized_input:
+                if argument.name not in prepared_input:
                     continue
-                value = normalized_input[argument.name]
+                value = prepared_input[argument.name]
                 if argument.option:
                     command.append(argument.option)
                 if isinstance(value, list):
                     command.extend(str(item) for item in value)
                 else:
                     command.append(str(value))
-            for key, value in normalized_input.items():
+            for key, value in prepared_input.items():
                 if key in recognized_arguments:
                     continue
                 if isinstance(value, list):
                     command.extend(str(item) for item in value)
                 else:
                     command.append(str(value))
-        elif isinstance(normalized_input, list):
-            command.extend(str(item) for item in normalized_input)
+        elif isinstance(prepared_input, list):
+            command.extend(str(item) for item in prepared_input)
         else:
             if normalized_input:
                 command.append(str(normalized_input))
-        #print(f"[agent.py][ReactAgent._invoke_tool_command] command={command}")
+        print(f"[agent.py][ReactAgent._invoke_tool_command] command={command}")
         completed = subprocess.run(command, capture_output=True, text=True)
         if completed.returncode != 0:
             result = completed.stderr.strip()
@@ -251,6 +263,51 @@ class ReactAgent:
             result = completed.stdout.strip()
         print(f"[agent.py][ReactAgent._invoke_tool_command] result={result}")
         return result
+
+    def _extract_stdin_payload(self, tool: Tool, payload: Dict[str, Any]) -> Optional[str]:
+        print(f"[agent.py][ReactAgent._extract_stdin_payload] tool={tool.name}, payload={payload}")
+        stdin_value: Optional[Any] = None
+        for key in ("stdin", "input_stream", "input_text"):
+            if key in payload:
+                stdin_value = payload.pop(key)
+                break
+        stdin_payload: Optional[str]
+        if stdin_value is None:
+            stdin_payload = None
+        elif isinstance(stdin_value, list):
+            stdin_payload = "\n".join(str(item) for item in stdin_value)
+        elif isinstance(stdin_value, dict):
+            stdin_payload = json.dumps(stdin_value)
+        else:
+            stdin_payload = str(stdin_value)
+        print(
+            f"[agent.py][ReactAgent._extract_stdin_payload] stdin_payload={stdin_payload}, remaining_payload={payload}"
+        )
+        return stdin_payload
+
+    def _prompt_for_stdin(self, tool: Tool) -> Optional[str]:
+        print(f"[agent.py][ReactAgent._prompt_for_stdin] tool={tool.name}")
+        if not sys.stdin.isatty():
+            print("[agent.py][ReactAgent._prompt_for_stdin] skipped (non-interactive stdin)")
+            return None
+        print(
+            "標準入力が必要な場合は内容を入力してください。空行のみ入力するとスキップします。"
+        )
+        lines: List[str] = []
+        while True:
+            try:
+                user_line = input()
+            except EOFError:
+                break
+            if user_line == "":
+                break
+            lines.append(user_line)
+        if not lines:
+            print("[agent.py][ReactAgent._prompt_for_stdin] no input provided")
+            return None
+        stdin_payload = "\n".join(lines)
+        print(f"[agent.py][ReactAgent._prompt_for_stdin] stdin_payload={stdin_payload}")
+        return stdin_payload
 
     def _chat_completion(self, messages: List[Dict[str, str]]) -> Dict[str, object]:
         print(f"[agent.py][ReactAgent._chat_completion] messages={messages}")
