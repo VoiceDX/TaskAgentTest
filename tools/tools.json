@@ -1,0 +1,16 @@
+[
+  {
+    "name": "math_tool",
+    "description": "Evaluate a mathematical expression using Python's AST evaluator.",
+    "script_path": "tools/math_tool.py",
+    "accepts_stdin": false,
+    "arguments": [
+      {
+        "name": "expression",
+        "option": "--expression",
+        "description": "Mathematical expression to evaluate.",
+        "required": true
+      }
+    ]
+  }
+]
