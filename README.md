@@ -30,6 +30,7 @@ pip install autogen openai
      - `option`: Python スクリプト起動時に付与するコマンドラインオプション（例: `--expression`）。
      - `description`: 引数の説明。
      - `required`: 必須かどうかを示す真偽値。
+    - `accepts_stdin` を `true` に設定すると、標準入力を受け付けるツールとして扱われます。その場合、プランで生成される `action_input` に `stdin`（もしくは `input_stream` / `input_text`）キーを含めると、スクリプト実行時にその内容が標準入力へ渡されます。キーが含まれない場合は、コンソールが対話可能な環境でのみ複数行入力用のプロンプトが表示されます。
    - `script_path` には Python スクリプトへの相対パスを指定します。
 
    ```json
@@ -38,6 +39,7 @@ pip install autogen openai
        "name": "math_tool",
        "description": "数式を評価して結果を返すツール",
        "script_path": "tools/math_tool.py",
+       "accepts_stdin": false,
        "arguments": [
          {
            "name": "expression",
