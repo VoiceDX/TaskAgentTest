@@ -33,10 +33,10 @@ class Tool:
 
 class ToolRegistry:
     def __init__(self, registry_path: Path):
-        print(f"[agent.py][ToolRegistry.__init__] registry_path={registry_path}")
+        #print(f"[agent.py][ToolRegistry.__init__] registry_path={registry_path}")
         self.registry_path = registry_path
         self.tools: Dict[str, Tool] = {}
-        print(f"[agent.py][ToolRegistry.__init__] tools={self.tools}")
+        #print(f"[agent.py][ToolRegistry.__init__] tools={self.tools}")
 
     def load_tools(self) -> Dict[str, Tool]:
         print(f"[agent.py][ToolRegistry.load_tools] registry_path={self.registry_path}")
@@ -95,7 +95,7 @@ class ReactAgent:
         )
 
     def _register_autogen_tools(self) -> None:
-        print(f"[agent.py][ReactAgent._register_autogen_tools] autogen_enabled={self._autogen_enabled}")
+        #print(f"[agent.py][ReactAgent._register_autogen_tools] autogen_enabled={self._autogen_enabled}")
         if not self._autogen_enabled or not self.user_proxy_agent:
             print(
                 f"[agent.py][ReactAgent._register_autogen_tools] skipped because autogen_enabled={self._autogen_enabled}"
@@ -103,10 +103,10 @@ class ReactAgent:
             return
         for tool in self.tools.values():
             self._register_single_tool(tool)
-        print(f"[agent.py][ReactAgent._register_autogen_tools] registered_tools={list(self.tools.keys())}")
+        #print(f"[agent.py][ReactAgent._register_autogen_tools] registered_tools={list(self.tools.keys())}")
 
     def _register_single_tool(self, tool: Tool) -> None:
-        print(f"[agent.py][ReactAgent._register_single_tool] tool={tool}")
+        #print(f"[agent.py][ReactAgent._register_single_tool] tool={tool}")
         if not self._autogen_enabled or not self.user_proxy_agent:
             print(
                 f"[agent.py][ReactAgent._register_single_tool] skipped tool={tool.name}, autogen_enabled={self._autogen_enabled}"
@@ -129,12 +129,10 @@ class ReactAgent:
             llm_decorator = getattr(self.assistant_agent, "register_for_llm_execution", None)
             if callable(llm_decorator):
                 llm_decorator(name=tool.name, description=description)(_executor)
-        print(
-            f"[agent.py][ReactAgent._register_single_tool] registered tool={tool.name} with description={description}"
-        )
+        #print(f"[agent.py][ReactAgent._register_single_tool] registered tool={tool.name} with description={description}")
 
     def _build_tool_docstring(self, tool: Tool) -> str:
-        print(f"[agent.py][ReactAgent._build_tool_docstring] tool={tool}")
+        #print(f"[agent.py][ReactAgent._build_tool_docstring] tool={tool}")
         if not tool.arguments:
             description = f"{tool.description}. 実行例: python {tool.script_path} '<input>'"
             print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
@@ -148,7 +146,7 @@ class ReactAgent:
             )
         formatted_arguments = " | ".join(argument_lines)
         description = f"{tool.description}. 引数: {formatted_arguments}"
-        print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
+        #print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
         return description
 
     def _build_tool_overview(self) -> str:
@@ -174,21 +172,21 @@ class ReactAgent:
         return overview
 
     def _build_system_prompt(self) -> str:
-        print(f"[agent.py][ReactAgent._build_system_prompt] building_prompt=True")
-        overview = self._build_tool_overview()
-        prompt = (
-            "You are an assistant following the ReAct approach.\n"
-            "Available tools:\n"
-            f"{overview}\n"
-            "Respond in JSON with keys 'thought', 'action', 'action_input', 'is_final', and 'final_answer'.\n"
-            "When invoking a tool with defined arguments, set 'action_input' to a JSON object mapping argument names to their values.\n"
-            "If you believe the objective is achieved or impossible, set 'is_final' to true and provide 'final_answer'."
+        prompt_path = Path(__file__).resolve().parent / "system_prompt.txt"
+        print(
+            f"[agent.py][ReactAgent._build_system_prompt] prompt_path={prompt_path}"
         )
-        print(f"[agent.py][ReactAgent._build_system_prompt] prompt={prompt}")
+        with prompt_path.open("r", encoding="utf-8") as fp:
+            template = fp.read()
+        overview = self._build_tool_overview()
+        prompt = template.replace("{tool_overview}", overview)
+        print(
+            f"[agent.py][ReactAgent._build_system_prompt] template_length={len(template)}, overview_length={len(overview)}"
+        )
         return prompt
 
     def _extract_reply_content(self, reply: Any) -> str:
-        print(f"[agent.py][ReactAgent._extract_reply_content] reply={reply}")
+        #print(f"[agent.py][ReactAgent._extract_reply_content] reply={reply}")
         content = ""
         if isinstance(reply, str):
             content = reply
@@ -202,7 +200,7 @@ class ReactAgent:
                 content = str(first)
         else:
             content = str(reply)
-        print(f"[agent.py][ReactAgent._extract_reply_content] content={content}")
+        #print(f"[agent.py][ReactAgent._extract_reply_content] content={content}")
         return content
 
     def _invoke_tool_command(
@@ -245,7 +243,7 @@ class ReactAgent:
         else:
             if normalized_input:
                 command.append(str(normalized_input))
-        print(f"[agent.py][ReactAgent._invoke_tool_command] command={command}")
+        #print(f"[agent.py][ReactAgent._invoke_tool_command] command={command}")
         completed = subprocess.run(command, capture_output=True, text=True)
         if completed.returncode != 0:
             result = completed.stderr.strip()
@@ -311,7 +309,7 @@ class ReactAgent:
     def _normalize_action_input(
         self, action_input: Union[str, Dict[str, Any], List[Any]]
     ) -> Union[str, Dict[str, Any], List[Any]]:
-        print(f"[agent.py][ReactAgent._normalize_action_input] action_input={action_input}")
+        #print(f"[agent.py][ReactAgent._normalize_action_input] action_input={action_input}")
         normalized: Union[str, Dict[str, Any], List[Any]]
         if isinstance(action_input, str):
             trimmed = action_input.strip()
@@ -326,11 +324,11 @@ class ReactAgent:
                     normalized = parsed
         else:
             normalized = action_input
-        print(f"[agent.py][ReactAgent._normalize_action_input] normalized={normalized}")
+        #print(f"[agent.py][ReactAgent._normalize_action_input] normalized={normalized}")
         return normalized
 
     def execute_tool(self, tool_name: str, action_input: Union[str, Dict[str, Any], List[Any]]) -> str:
-        print(f"[agent.py][ReactAgent.execute_tool] tool_name={tool_name}, action_input={action_input}")
+        #print(f"[agent.py][ReactAgent.execute_tool] tool_name={tool_name}, action_input={action_input}")
         tool = self.tools.get(tool_name)
         if not tool:
             result = f"Unknown tool: {tool_name}"
@@ -338,11 +336,11 @@ class ReactAgent:
             return result
         normalized_input = self._normalize_action_input(action_input)
         result = self._invoke_tool_command(tool, normalized_input)
-        print(f"[agent.py][ReactAgent.execute_tool] result={result}")
+        #print(f"[agent.py][ReactAgent.execute_tool] result={result}")
         return result
 
     def run(self, objective: str) -> str:
-        print(f"[agent.py][ReactAgent.run] objective={objective}")
+        #print(f"[agent.py][ReactAgent.run] objective={objective}")
         history: List[str] = []
         observation: Optional[str] = None
         for step in range(self.max_turns):
