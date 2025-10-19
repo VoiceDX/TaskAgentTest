@@ -157,7 +157,7 @@ class ReactAgent:
         return description
 
     def _build_tool_overview(self) -> str:
-        print(f"[agent.py][ReactAgent._build_tool_overview] tools={self.tools}")
+        #print(f"[agent.py][ReactAgent._build_tool_overview] tools={self.tools}")
         tool_descriptions = []
         for tool in self.tools.values():
             if not tool.arguments:
@@ -176,21 +176,17 @@ class ReactAgent:
                 f"- {tool.name}: {tool.description} (python {tool.script_path})\n  Arguments: {arguments_description}\n  Stdin: {stdin_description}"
             )
         overview = "\n".join(tool_descriptions)
-        print(f"[agent.py][ReactAgent._build_tool_overview] overview={overview}")
+        #print(f"[agent.py][ReactAgent._build_tool_overview] overview={overview}")
         return overview
 
     def _build_system_prompt(self) -> str:
         prompt_path = Path(__file__).resolve().parent / "system_prompt.txt"
-        print(
-            f"[agent.py][ReactAgent._build_system_prompt] prompt_path={prompt_path}"
-        )
+        #print(f"[agent.py][ReactAgent._build_system_prompt] prompt_path={prompt_path}")
         with prompt_path.open("r", encoding="utf-8") as fp:
             template = fp.read()
         overview = self._build_tool_overview()
         prompt = template.replace("{tool_overview}", overview)
-        print(
-            f"[agent.py][ReactAgent._build_system_prompt] template_length={len(template)}, overview_length={len(overview)}"
-        )
+        #print(f"[agent.py][ReactAgent._build_system_prompt] template_length={len(template)}, overview_length={len(overview)}")
         return prompt
 
     def _extract_reply_content(self, reply: Any) -> str:
@@ -325,9 +321,7 @@ class ReactAgent:
         return response
 
     def plan_action(self, objective: str, history: List[str], observation: Optional[str]) -> Dict[str, Any]:
-        print(
-            f"[agent.py][ReactAgent.plan_action] objective={objective}, history={history}, observation={observation}"
-        )
+        #print(f"[agent.py][ReactAgent.plan_action] objective={objective}, history={history}, observation={observation}")
         system_prompt = self._build_system_prompt()
         payload = {
             "objective": objective,
@@ -368,7 +362,8 @@ class ReactAgent:
             }
         # 出力を log.txt に書き込む
         with open("log.txt", "a", encoding="utf-8") as f:
-            print("[agent.py][ReactAgent.plan_action] plan={plan}",file=f)
+            print(f"[agent.py][ReactAgent.plan_action] plan={plan}",file=f)
+            print(f"[agent.py][ReactAgent.plan_action] history={history}",file=f)
         return plan
 
     def _normalize_action_input(
@@ -405,16 +400,17 @@ class ReactAgent:
         return result
 
     def run(self, objective: str) -> str:
-        #print(f"[agent.py][ReactAgent.run] objective={objective}")
+        print(f"[agent.py][ReactAgent.run] objective={objective}")
+        with open("log.txt", "w", encoding="utf-8") as f:
+            print(f"[agent.py][ReactAgent.run] start", file=f)
         history: List[str] = []
         observation: Optional[str] = None
         for step in range(self.max_turns):
+            print(f"[agent.py][ReactAgent.run] objective={objective}")
             plan = self.plan_action(objective, history, observation)
             if plan.get("is_final"):
                 final_answer = plan.get("final_answer", "")
-                print(
-                    f"[agent.py][ReactAgent.run] final_answer={final_answer}, step={step}, history={history}"
-                )
+                #print(f"[agent.py][ReactAgent.run] final_answer={final_answer}, step={step}, history={history}")
                 return final_answer
             action = plan.get("action", "")
             action_input = plan.get("action_input", "")
