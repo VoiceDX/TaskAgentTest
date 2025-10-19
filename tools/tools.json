@@ -121,5 +121,17 @@
         "required": false
       }
     ]
+  },
+  {
+    "name": "check_draft",
+    "description": "契約書の草案が用意済みかを確認する",
+    "script_path": "tools/check_draft.py",
+    "arguments": []
+  },
+  {
+    "name": "read_draft",
+    "description": "契約書の最新の草案を読み込む",
+    "script_path": "tools/read_draft.py",
+    "arguments": []
   }
 ]

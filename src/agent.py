@@ -151,7 +151,9 @@ class ReactAgent:
             )
         formatted_arguments = " | ".join(argument_lines)
         description = f"{tool.description}. 引数: {formatted_arguments}"
-        print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
+        if tool.accepts_stdin:
+            description += " 標準入力に対応しています (action_input に stdin を含めるか、実行時に入力を指定してください)。"
+        #print(f"[agent.py][ReactAgent._build_tool_docstring] description={description}")
         return description
 
     def _build_tool_overview(self) -> str:
@@ -253,10 +255,16 @@ class ReactAgent:
         elif isinstance(prepared_input, list):
             command.extend(str(item) for item in prepared_input)
         else:
-            if normalized_input:
-                command.append(str(normalized_input))
-        print(f"[agent.py][ReactAgent._invoke_tool_command] command={command}")
-        completed = subprocess.run(command, capture_output=True, text=True)
+            if prepared_input:
+                command.append(str(prepared_input))
+        if stdin_payload is None and tool.accepts_stdin:
+            stdin_payload = self._prompt_for_stdin(tool)
+        if stdin_payload and not stdin_payload.endswith("\n"):
+            stdin_payload = f"{stdin_payload}\n"
+        run_kwargs: Dict[str, Any] = {"capture_output": True, "text": True}
+        if stdin_payload is not None:
+            run_kwargs["input"] = stdin_payload
+        completed = subprocess.run(command, **run_kwargs)
         if completed.returncode != 0:
             result = completed.stderr.strip()
         else:
