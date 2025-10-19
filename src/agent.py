@@ -273,7 +273,7 @@ class ReactAgent:
         return result
 
     def _extract_stdin_payload(self, tool: Tool, payload: Dict[str, Any]) -> Optional[str]:
-        print(f"[agent.py][ReactAgent._extract_stdin_payload] tool={tool.name}, payload={payload}")
+        #print(f"[agent.py][ReactAgent._extract_stdin_payload] tool={tool.name}, payload={payload}")
         stdin_value: Optional[Any] = None
         for key in ("stdin", "input_stream", "input_text"):
             if key in payload:
@@ -288,13 +288,11 @@ class ReactAgent:
             stdin_payload = json.dumps(stdin_value)
         else:
             stdin_payload = str(stdin_value)
-        print(
-            f"[agent.py][ReactAgent._extract_stdin_payload] stdin_payload={stdin_payload}, remaining_payload={payload}"
-        )
+        #print(f"[agent.py][ReactAgent._extract_stdin_payload] stdin_payload={stdin_payload}, remaining_payload={payload}")
         return stdin_payload
 
     def _prompt_for_stdin(self, tool: Tool) -> Optional[str]:
-        print(f"[agent.py][ReactAgent._prompt_for_stdin] tool={tool.name}")
+        #print(f"[agent.py][ReactAgent._prompt_for_stdin] tool={tool.name}")
         if not sys.stdin.isatty():
             print("[agent.py][ReactAgent._prompt_for_stdin] skipped (non-interactive stdin)")
             return None
@@ -314,11 +312,11 @@ class ReactAgent:
             print("[agent.py][ReactAgent._prompt_for_stdin] no input provided")
             return None
         stdin_payload = "\n".join(lines)
-        print(f"[agent.py][ReactAgent._prompt_for_stdin] stdin_payload={stdin_payload}")
+        #print(f"[agent.py][ReactAgent._prompt_for_stdin] stdin_payload={stdin_payload}")
         return stdin_payload
 
     def _chat_completion(self, messages: List[Dict[str, str]]) -> Dict[str, object]:
-        print(f"[agent.py][ReactAgent._chat_completion] messages={messages}")
+        #print(f"[agent.py][ReactAgent._chat_completion] messages={messages}")
         try:
             response = self.llm.create(messages=messages, model=self.model)
         except AttributeError:
@@ -368,7 +366,9 @@ class ReactAgent:
                 "is_final": True,
                 "final_answer": content,
             }
-        print(f"[agent.py][ReactAgent.plan_action] plan={plan}")
+        # 出力を log.txt に書き込む
+        with open("log.txt", "a", encoding="utf-8") as f:
+            print("[agent.py][ReactAgent.plan_action] plan={plan}",file=f)
         return plan
 
     def _normalize_action_input(
