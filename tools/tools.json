@@ -1,0 +1,137 @@
+[
+  {
+    "name": "create_draft",
+    "description": "契約書の草案を作成する",
+    "script_path": "tools/request_legal.py",
+    "arguments": [
+      {
+        "name": "company",
+        "option": "-c",
+        "description": "契約締結相手の会社名",
+        "required": true
+      },
+      {
+        "name": "option",
+        "option": "-o",
+        "description": "顧客固有の注意事項",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "request_legal",
+    "description": "法務部門に依頼する",
+    "script_path": "tools/request_legal.py",
+    "arguments": [
+      {
+        "name": "requirement",
+        "option": "-r",
+        "description": "依頼する具体的な内容",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "request_user",
+    "description": "担当部門のユーザに意見を求める",
+    "script_path": "tools/request_user.py",
+    "arguments": [
+      {
+        "name": "requirement",
+        "option": "-r",
+        "description": "ユーザへの質問事項",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "answer_user",
+    "description": "担当部門のユーザに回答する",
+    "script_path": "tools/answer_user.py",
+    "arguments": [
+      {
+        "name": "answer",
+        "option": "-a",
+        "description": "ユーザへの回答内容",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "answer_legal",
+    "description": "法律部門に回答する",
+    "script_path": "tools/answer_regal.py",
+    "arguments": [
+      {
+        "name": "answer",
+        "option": "-a",
+        "description": "回答する内容",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "mail_draft",
+    "description": "顧客に対してメール文章を作成する",
+    "script_path": "tools/mail_draft.py",
+    "arguments": [
+      {
+        "name": "to",
+        "option": "-t",
+        "description": "メールの目的と文章作成のための要旨",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "mail_send",
+    "description": "顧客に対してメールを送信する",
+    "script_path": "tools/mail_send.py",
+    "arguments": [
+      {
+        "name": "to",
+        "option": "-t",
+        "description": "顧客の名前",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "human_in_the_roop_check",
+    "description": "法務部門や顧客に依頼を出す前に内容として問題ないかを担当部門のユーザに確認する",
+    "script_path": "tools/human_in_the_roop_check.py",
+    "arguments": [
+      {
+        "name": "requirement",
+        "option": "-r",
+        "description": "人間に対する確認内容",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "human_in_the_roop_advice",
+    "description": "進め方が分からない場合に担当部門のユーザに助けを求める",
+    "script_path": "tools/human_in_the_roop_advice.py",
+    "arguments": [
+      {
+        "name": "requirement",
+        "option": "-r",
+        "description": "助けを求めたい内容、何の回答を得たいかを示す",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "check_draft",
+    "description": "契約書の草案が用意済みかを確認する",
+    "script_path": "tools/check_draft.py",
+    "arguments": []
+  },
+  {
+    "name": "read_draft",
+    "description": "契約書の最新の草案を読み込む",
+    "script_path": "tools/read_draft.py",
+    "arguments": []
+  }
+]
