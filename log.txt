@@ -1,0 +1,5 @@
+[agent.py][ReactAgent.plan_action] plan={plan}
+[agent.py][ReactAgent.plan_action] plan={plan}
+[agent.py][ReactAgent.plan_action] plan={plan}
+[agent.py][ReactAgent.plan_action] plan={plan}
+[agent.py][ReactAgent.plan_action] plan={plan}
